@@ -2,9 +2,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.bellszhu.elasticsearch</groupId>
+    <groupId>com.plugins.elasticsearch</groupId>
     <artifactId>elasticsearch-analysis-dynamic-synonym</artifactId>
-    <version>7.0.0</version>
+    <version>6.2.2</version>
     <packaging>jar</packaging>
     <name>elasticsearch-dynamic-synonym</name>
     <description>Analysis-plugin for synonym</description>
@@ -16,7 +16,7 @@
         <elasticsearch.plugin.name>analysis-dynamic-synonym</elasticsearch.plugin.name>
         <elasticsearch.assembly.descriptor>${project.basedir}/src/main/assemblies/plugin.xml
         </elasticsearch.assembly.descriptor>
-        <elasticsearch.plugin.classname>com.bellszhu.elasticsearch.plugin.DynamicSynonymPlugin
+        <elasticsearch.plugin.classname>com.plugins.elasticsearch.plugin.DynamicSynonymPlugin
         </elasticsearch.plugin.classname>
         <elasticsearch.plugin.jvm>true</elasticsearch.plugin.jvm>
     </properties>

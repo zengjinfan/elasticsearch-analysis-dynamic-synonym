@@ -1,10 +1,14 @@
 /**
  *
  */
-package com.bellszhu.elasticsearch.plugin;
+package com.plugins.elasticsearch.plugin;
 
-import com.bellszhu.elasticsearch.plugin.synonym.analysis.DynamicSynonymTokenFilterFactory;
-import com.bellszhu.elasticsearch.plugin.synonym.service.DynamicSynonymAnalysisService;
+import com.plugins.elasticsearch.plugin.synonym.analysis.DynamicSynonymTokenFilterFactory;
+import com.plugins.elasticsearch.plugin.synonym.service.DynamicSynonymAnalysisService;
+import com.plugins.elasticsearch.plugin.synonym.service.DynamicSynonymComponent;
+import com.plugins.elasticsearch.plugin.synonym.service.DynamicSynonymIndexEventListener;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.cluster.service.ClusterService;
 import org.elasticsearch.common.component.LifecycleComponent;
@@ -13,8 +17,8 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.NamedXContentRegistry;
 import org.elasticsearch.env.Environment;
 import org.elasticsearch.env.NodeEnvironment;
+import org.elasticsearch.index.IndexModule;
 import org.elasticsearch.index.IndexSettings;
-import org.elasticsearch.index.analysis.AnalysisRegistry;
 import org.elasticsearch.index.analysis.TokenFilterFactory;
 import org.elasticsearch.indices.analysis.AnalysisModule;
 import org.elasticsearch.plugins.AnalysisPlugin;
@@ -31,11 +35,10 @@ import java.util.Map;
 
 import static java.util.Collections.singletonList;
 
-/**
- * @author bellszhu
- */
+
 public class DynamicSynonymPlugin extends Plugin implements AnalysisPlugin {
-    private PluginComponent pluginComponent = new PluginComponent();
+    private static Logger logger = LogManager.getLogger("dynamic-synonym");
+    private DynamicSynonymComponent pluginComponent = new DynamicSynonymComponent();
 
     @Override
     public Collection<Object> createComponents(Client client,
@@ -57,6 +60,19 @@ public class DynamicSynonymPlugin extends Plugin implements AnalysisPlugin {
         return singletonList(DynamicSynonymAnalysisService.class);
     }
 
+    //添加lister
+    @Override
+    public void onIndexModule(IndexModule indexModule) {
+        indexModule.addIndexEventListener(new DynamicSynonymIndexEventListener());
+    }
+
+    //4.释放资源
+    @Override
+    public void close() {
+        logger.info("DynamicSynonymPlugin close...");
+        DynamicSynonymTokenFilterFactory.closeDynamicSynonym();
+    }
+
     @Override
     public Map<String, AnalysisModule.AnalysisProvider<TokenFilterFactory>> getTokenFilters() {
         Map<String, AnalysisModule.AnalysisProvider<org.elasticsearch.index.analysis.TokenFilterFactory>> extra = new HashMap<>();
@@ -66,6 +82,8 @@ public class DynamicSynonymPlugin extends Plugin implements AnalysisPlugin {
             @Override
             public TokenFilterFactory get(IndexSettings indexSettings, Environment environment, String name, Settings settings)
                     throws IOException {
+                logger.info("########## Index {} get TokenFilterFactory,  name = {}, settings = {}", indexSettings.getIndex().getName(),
+                        name, settings.toDelimitedString(','));
                 return new DynamicSynonymTokenFilterFactory(indexSettings, environment, name, settings, pluginComponent.getAnalysisRegistry());
             }
 
@@ -77,18 +95,4 @@ public class DynamicSynonymPlugin extends Plugin implements AnalysisPlugin {
         return extra;
     }
 
-
-    public static class PluginComponent {
-
-        private AnalysisRegistry analysisRegistry;
-
-        AnalysisRegistry getAnalysisRegistry() {
-            return analysisRegistry;
-        }
-
-        public void setAnalysisRegistry(AnalysisRegistry analysisRegistry) {
-            this.analysisRegistry = analysisRegistry;
-        }
-
-    }
 }

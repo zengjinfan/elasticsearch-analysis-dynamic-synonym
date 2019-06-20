@@ -1,4 +1,4 @@
-package com.bellszhu.elasticsearch.plugin.synonym.analysis;
+package com.plugins.elasticsearch.plugin.synonym.analysis;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
